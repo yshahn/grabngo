@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GrabNGo Solution — Restaurant Tech, Handled. Free.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --stone:#EDE7DC;
+    --stone-deep:#E2DACB;
+    --ink:#1C1917;
+    --ink-soft:#4A443C;
+    --pine:#1F4D3D;
+    --pine-light:#2E6B54;
+    --bell:#F0B429;
+    --paper:#FFFDF8;
+    --rule:#D8CFBE;
+    --red:#B8452F;
+    --radius:14px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--stone);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;text-decoration:none;}
+  .mono{font-family:'Space Mono',monospace;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+  .eyebrow{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--pine);
+    font-weight:700;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .eyebrow::before{content:'';width:7px;height:7px;background:var(--bell);border-radius:50%;display:inline-block;}
+  h1,h2,h3{font-family:'Space Mono',monospace;line-height:1.12;letter-spacing:-0.01em;}
+  h1{font-size:clamp(34px,5vw,58px);font-weight:700;}
+  h2{font-size:clamp(26px,3.4vw,38px);font-weight:700;}
+  h3{font-size:18px;font-weight:700;}
+  p{color:var(--ink-soft);}
+  .lede{font-size:18px;line-height:1.6;max-width:520px;}
+  section{padding:88px 0;}
+  @media(max-width:720px){section{padding:56px 0;}}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(237,231,220,0.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--rule);
+  }
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;padding-top:18px;padding-bottom:18px;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-weight:700;font-size:17px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:8px;
+    background:var(--pine);color:var(--bell);
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;font-weight:700;
+  }
+  .navlinks{display:flex;gap:32px;font-size:14px;font-weight:500;}
+  .navlinks a{color:var(--ink-soft);transition:color .15s;}
+  .navlinks a:hover{color:var(--pine);}
+  @media(max-width:720px){.navlinks{display:none;}}
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;font-size:14px;
+    padding:12px 22px;border-radius:9px;
+    display:inline-flex;align-items:center;gap:8px;
+    cursor:pointer;border:none;transition:transform .15s,box-shadow .15s;
+  }
+  .btn-primary{background:var(--pine);color:var(--paper);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(31,77,61,0.28);}
+  .btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink);}
+  .btn-ghost:hover{background:var(--ink);color:var(--paper);}
+
+  /* ---------- HERO ---------- */
+  .hero{padding-top:76px;padding-bottom:60px;}
+  .hero-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:56px;align-items:center;}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;}}
+  .hero h1{margin:18px 0 20px;}
+  .hero h1 .accent{color:var(--pine);}
+  .hero-cta{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap;}
+  .hero-note{margin-top:18px;font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:8px;}
+  .hero-note .dot{width:6px;height:6px;border-radius:50%;background:var(--pine);}
+
+  /* ---------- TICKET (signature element) ---------- */
+  .ticket-wrap{display:flex;justify-content:center;}
+  .ticket{
+    background:var(--paper);
+    width:280px;
+    padding:26px 22px 30px;
+    border-radius:4px;
+    box-shadow:0 24px 60px rgba(28,25,23,0.18);
+    position:relative;
+    transform:rotate(2deg);
+    font-family:'Space Mono',monospace;
+  }
+  .ticket::before{
+    content:'';position:absolute;left:0;right:0;bottom:-9px;height:18px;
+    background:
+      radial-gradient(circle at 8px 0, transparent 8px, var(--paper) 8.5px) 0 0/18px 18px repeat-x;
+  }
+  .ticket-head{text-align:center;border-bottom:2px dashed var(--rule);padding-bottom:14px;margin-bottom:14px;}
+  .ticket-head .name{font-weight:700;font-size:14px;letter-spacing:0.04em;}
+  .ticket-head .sub{font-size:10px;color:var(--ink-soft);margin-top:4px;letter-spacing:0.08em;}
+  .ticket-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;color:var(--ink-soft);}
+  .ticket-status{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+  .tstep{display:flex;align-items:center;gap:10px;font-size:11.5px;opacity:0;animation:tin .5s ease forwards;}
+  .tstep:nth-child(1){animation-delay:.3s;}
+  .tstep:nth-child(2){animation-delay:.9s;}
+  .tstep:nth-child(3){animation-delay:1.5s;}
+  .tstep .chk{
+    width:16px;height:16px;border-radius:50%;background:var(--pine);
+    color:var(--paper);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;
+  }
+  @keyframes tin{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .ticket-total{margin-top:16px;border-top:2px dashed var(--rule);padding-top:12px;display:flex;justify-content:space-between;font-weight:700;font-size:13px;}
+  .ticket-total .zero{color:var(--pine);}
+  @media(max-width:900px){.ticket{transform:none;}}
+
+  /* ---------- SERVICES ---------- */
+  .services-head{max-width:620px;margin-bottom:44px;}
+  .svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  @media(max-width:920px){.svc-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:560px){.svc-grid{grid-template-columns:1fr;}}
+  .svc-card{
+    background:var(--paper);border-radius:var(--radius);
+    padding:26px 22px;border:1px solid var(--rule);
+    display:flex;flex-direction:column;gap:14px;
+    transition:transform .18s,box-shadow .18s;
+  }
+  .svc-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(28,25,23,0.10);}
+  .svc-num{font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-soft);letter-spacing:0.1em;}
+  .svc-icon{width:40px;height:40px;border-radius:9px;background:var(--stone-deep);display:flex;align-items:center;justify-content:center;font-size:19px;}
+  .svc-card h3{font-size:15.5px;}
+  .svc-card p{font-size:13.5px;line-height:1.55;}
+
+  /* ---------- WHY FREE (invoice) ---------- */
+  .why{background:var(--ink);color:var(--stone);}
+  .why-grid{display:grid;grid-template-columns:1fr 0.85fr;gap:56px;align-items:center;}
+  @media(max-width:900px){.why-grid{grid-template-columns:1fr;}}
+  .why h2{color:var(--paper);}
+  .why .lede{color:#C9C2B4;}
+  .invoice{
+    background:var(--paper);color:var(--ink);border-radius:8px;
+    padding:30px 28px;font-family:'Space Mono',monospace;
+    box-shadow:0 30px 70px rgba(0,0,0,0.35);
+  }
+  .invoice-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--rule);padding-bottom:16px;margin-bottom:16px;}
+  .invoice-head .t{font-weight:700;font-size:14px;}
+  .invoice-head .d{font-size:11px;color:var(--ink-soft);}
+  .inv-row{display:flex;justify-content:space-between;font-size:13px;padding:9px 0;border-bottom:1px dashed var(--rule);}
+  .inv-row.total{border-bottom:none;border-top:2px solid var(--ink);margin-top:6px;padding-top:14px;font-weight:700;font-size:16px;}
+  .inv-row.total .amt{color:var(--pine);}
+  .inv-foot{margin-top:18px;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft);line-height:1.55;}
+
+  /* ---------- REFERENCES ---------- */
+  .ref-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  @media(max-width:860px){.ref-grid{grid-template-columns:1fr;}}
+  .ref-card{
+    background:var(--paper);border-radius:var(--radius);overflow:hidden;
+    border:1px solid var(--rule);
+    display:flex;flex-direction:column;
+    transition:transform .18s,box-shadow .18s;
+  }
+  .ref-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(28,25,23,0.14);}
+  .ref-top{
+    padding:30px 24px 22px;
+    display:flex;flex-direction:column;gap:6px;
+    position:relative;
+  }
+  .ref-cuisine{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--pine);font-weight:700;}
+  .ref-name{font-family:'Space Mono',monospace;font-size:19px;font-weight:700;margin-top:4px;}
+  .ref-loc{font-size:13px;color:var(--ink-soft);}
+  .ref-feats{padding:0 24px 22px;display:flex;flex-wrap:wrap;gap:7px;}
+  .ref-tag{
+    font-size:11px;background:var(--stone-deep);color:var(--ink-soft);
+    padding:5px 10px;border-radius:20px;font-weight:500;
+  }
+  .ref-bottom{
+    margin-top:auto;padding:16px 24px;
+    border-top:1px solid var(--rule);
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:13px;font-weight:600;
+  }
+  .ref-bottom span.arrow{transition:transform .15s;}
+  .ref-card:hover .arrow{transform:translateX(4px);}
+
+  /* ---------- PROCESS ---------- */
+  .proc{background:var(--stone-deep);}
+  .proc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;}
+  @media(max-width:860px){.proc-grid{grid-template-columns:1fr;gap:28px;}}
+  .proc-step{padding:0 22px 0 0;position:relative;}
+  .proc-step:not(:last-child)::after{
+    content:'';position:absolute;top:20px;right:0;width:100%;height:1.5px;
+    background:repeating-linear-gradient(90deg,var(--ink-soft) 0 6px,transparent 6px 12px);
+    opacity:0.35;
+  }
+  @media(max-width:860px){.proc-step:not(:last-child)::after{display:none;}}
+  .proc-num{font-family:'Space Mono',monospace;font-size:34px;font-weight:700;color:var(--pine);opacity:0.85;}
+  .proc-step h3{margin-top:14px;font-size:16px;}
+  .proc-step p{margin-top:8px;font-size:13.5px;}
+
+  /* ---------- CTA / FOOTER ---------- */
+  .cta{text-align:center;}
+  .cta h2{max-width:640px;margin:0 auto 16px;}
+  .cta .lede{margin:0 auto 30px;text-align:center;}
+  .cta-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+
+  footer{background:var(--ink);color:#C9C2B4;padding:52px 0 30px;}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;}
+  @media(max-width:720px){.foot-grid{grid-template-columns:1fr;gap:28px;}}
+  .foot-brand{display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-weight:700;color:var(--paper);font-size:16px;margin-bottom:12px;}
+  footer .foot-desc{font-size:13.5px;line-height:1.6;max-width:320px;}
+  footer h4{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#8B8478;margin-bottom:14px;}
+  footer ul{list-style:none;display:flex;flex-direction:column;gap:10px;font-size:13.5px;}
+  footer ul a:hover{color:var(--bell);}
+  .foot-bottom{margin-top:44px;padding-top:22px;border-top:1px solid #33302B;font-size:12px;color:#8B8478;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><div class="brand-mark">G</div>GrabNGo Solution</div>
+    <div class="navlinks">
+      <a href="#services">Services</a>
+      <a href="#why-free">Why Free</a>
+      <a href="#work">Our Work</a>
+      <a href="#process">How It Works</a>
+    </div>
+    <a href="#contact" class="btn btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Restaurant Tech · One Stop</span>
+      <h1>Everything your restaurant needs online. <span class="accent">Handled.</span> Free.</h1>
+      <p class="lede">Ordering, delivery, reservations, your website, your app, your domain, your Google presence — we build it, connect it to your POS, and keep it running. No setup fee. No monthly bill.</p>
+      <div class="hero-cta">
+        <a href="#contact" class="btn btn-primary">Get Started Free →</a>
+        <a href="#work" class="btn btn-ghost">See Restaurants We've Built</a>
+      </div>
+      <div class="hero-note"><span class="dot"></span> Live in 3 restaurants today — Hsu's Gourmet, Lucky Key &amp; Fuji Ya, Pacific Rim Bistro</div>
+    </div>
+    <div class="ticket-wrap">
+      <div class="ticket">
+        <div class="ticket-head">
+          <div class="name">ORDER #0847</div>
+          <div class="sub">TABLE 4 · TAKEOUT</div>
+        </div>
+        <div class="ticket-row"><span>2× Hibachi Chicken</span><span>$27.90</span></div>
+        <div class="ticket-row"><span>1× Spicy Tuna Roll</span><span>$9.50</span></div>
+        <div class="ticket-row"><span>1× Miso Soup</span><span>$3.50</span></div>
+        <div class="ticket-status">
+          <div class="tstep"><div class="chk">✓</div> Order placed online</div>
+          <div class="tstep"><div class="chk">✓</div> Synced to POS</div>
+          <div class="tstep"><div class="chk">✓</div> Firing in kitchen</div>
+        </div>
+        <div class="ticket-total"><span>Restaurant pays</span><span class="zero">$0.00</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="services">
+  <div class="wrap">
+    <div class="services-head">
+      <span class="eyebrow">What We Build</span>
+      <h2 style="margin-top:14px;">Four services. One partner.</h2>
+      <p class="lede" style="margin-top:14px;">Most restaurants juggle a website vendor, an ordering app, a hosting bill, and a marketing agency — each with their own invoice. We replace all four.</p>
+    </div>
+    <div class="svc-grid">
+      <div class="svc-card">
+        <div class="svc-icon">🛎️</div>
+        <div class="svc-num">01 / ORDERING</div>
+        <h3>Order, Delivery &amp; Reservation Platform</h3>
+        <p>Online ordering, delivery, and table reservations in one app — connected straight to your kitchen and your POS, no re-typing orders by hand.</p>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">📱</div>
+        <div class="svc-num">02 / BUILD</div>
+        <h3>Apps &amp; Websites</h3>
+        <p>A branded website and mobile app for your restaurant, designed, built, and kept up to date — menu changes, photos, hours, all handled for you.</p>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">🌐</div>
+        <div class="svc-num">03 / HOST</div>
+        <h3>Domain &amp; Hosting</h3>
+        <p>Your domain name registered, your site hosted, your security certificates renewed. You never have to think about servers again.</p>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">📈</div>
+        <div class="svc-num">04 / GROW</div>
+        <h3>Google Marketing</h3>
+        <p>Show up when nearby diners search for food like yours — Google Business management, search visibility, and review growth, ongoing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="why-free" class="why">
+  <div class="wrap why-grid">
+    <div>
+      <span class="eyebrow" style="color:var(--bell);">The Catch (There Isn't One)</span>
+      <h2 style="margin-top:14px;">Why is all of this actually free?</h2>
+      <p class="lede" style="margin-top:14px;">We don't charge restaurants to build, host, or run any of it. We earn a small platform fee — a dollar — only when a customer completes an order through your online ordering system. No sale, no fee. If we're not making you money, we're not making any either.</p>
+    </div>
+    <div class="invoice">
+      <div class="invoice-head">
+        <div class="t">GRABNGO SOLUTION</div>
+        <div class="d">Monthly Statement</div>
+      </div>
+      <div class="inv-row"><span>Website design &amp; build</span><span>$0.00</span></div>
+      <div class="inv-row"><span>Mobile app (iOS + Android)</span><span>$0.00</span></div>
+      <div class="inv-row"><span>Domain &amp; hosting</span><span>$0.00</span></div>
+      <div class="inv-row"><span>Google marketing management</span><span>$0.00</span></div>
+      <div class="inv-row"><span>Ongoing support &amp; updates</span><span>$0.00</span></div>
+      <div class="inv-row total"><span>Total due this month</span><span class="amt">$0.00</span></div>
+      <div class="inv-foot">A small platform fee applies only to completed online orders — never a monthly bill, never a setup cost.</div>
+    </div>
+  </div>
+</section>
+
+<section id="work">
+  <div class="wrap">
+    <div class="services-head">
+      <span class="eyebrow">Our Work</span>
+      <h2 style="margin-top:14px;">Three restaurants, live today.</h2>
+      <p class="lede" style="margin-top:14px;">Every one of these is a real, working restaurant — ordering, reservations, and their whole online presence, built and run by us.</p>
+    </div>
+    <div class="ref-grid">
+
+      <a class="ref-card" href="https://hsusgourmet.com" target="_blank" rel="noopener">
+        <div class="ref-top">
+          <span class="ref-cuisine">Chinese</span>
+          <div class="ref-name">Hsu's Gourmet</div>
+          <div class="ref-loc">Atlanta, GA</div>
+        </div>
+        <div class="ref-feats">
+          <span class="ref-tag">Online Ordering</span>
+          <span class="ref-tag">Reservations</span>
+          <span class="ref-tag">Rewards</span>
+        </div>
+        <div class="ref-bottom">Visit site <span class="arrow">→</span></div>
+      </a>
+
+      <a class="ref-card" href="https://luckykeyfujiya.com" target="_blank" rel="noopener">
+        <div class="ref-top">
+          <span class="ref-cuisine">Chinese · Hibachi · Sushi</span>
+          <div class="ref-name">Lucky Key &amp; Fuji Ya</div>
+          <div class="ref-loc">Tucker, GA</div>
+        </div>
+        <div class="ref-feats">
+          <span class="ref-tag">Online Ordering</span>
+          <span class="ref-tag">Delivery</span>
+          <span class="ref-tag">Reservations</span>
+        </div>
+        <div class="ref-bottom">Visit site <span class="arrow">→</span></div>
+      </a>
+
+      <a class="ref-card" href="https://pacificrimatl.com" target="_blank" rel="noopener">
+        <div class="ref-top">
+          <span class="ref-cuisine">Asian Fusion Bistro</span>
+          <div class="ref-name">Pacific Rim Bistro</div>
+          <div class="ref-loc">Atlanta, GA</div>
+        </div>
+        <div class="ref-feats">
+          <span class="ref-tag">Online Ordering</span>
+          <span class="ref-tag">Reservations</span>
+          <span class="ref-tag">Rewards</span>
+        </div>
+        <div class="ref-bottom">Visit site <span class="arrow">→</span></div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<section id="process" class="proc">
+  <div class="wrap">
+    <div class="services-head">
+      <span class="eyebrow">How It Works</span>
+      <h2 style="margin-top:14px;">From a phone call to live online.</h2>
+    </div>
+    <div class="proc-grid">
+      <div class="proc-step">
+        <div class="proc-num">01</div>
+        <h3>Tell us about your restaurant</h3>
+        <p>Your menu, your hours, your brand — a short call is all we need to get started.</p>
+      </div>
+      <div class="proc-step">
+        <div class="proc-num">02</div>
+        <h3>We build everything</h3>
+        <p>Website, app, ordering, reservations — designed and connected to your kitchen.</p>
+      </div>
+      <div class="proc-step">
+        <div class="proc-num">03</div>
+        <h3>You go live</h3>
+        <p>Your domain, hosting, and Google presence are set up and switched on. Free.</p>
+      </div>
+      <div class="proc-step">
+        <div class="proc-num">04</div>
+        <h3>We keep it running</h3>
+        <p>Updates, support, and marketing continue for as long as you're open.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="cta">
+  <div class="wrap">
+    <span class="eyebrow" style="justify-content:center;display:flex;">Get Started</span>
+    <h2 style="margin-top:14px;">Let's build your restaurant's online home.</h2>
+    <p class="lede">No cost to start. No cost to run. Reach out and we'll walk you through it.</p>
+    <div class="cta-buttons">
+      <a href="mailto:yonghahn@grabngosolution.com" class="btn btn-primary">Email Us</a>
+      <a href="tel:+17702701188" class="btn btn-ghost">Call Us</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <div class="foot-brand"><div class="brand-mark">G</div>GrabNGo Solution</div>
+      <p class="foot-desc">One-stop, free restaurant technology — ordering, apps, websites, hosting, and marketing, built and run for independent restaurants.</p>
+    </div>
+    <div>
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#services">Ordering &amp; Reservations</a></li>
+        <li><a href="#services">Apps &amp; Websites</a></li>
+        <li><a href="#services">Hosting</a></li>
+        <li><a href="#services">Google Marketing</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:yonghahn@grabngosolution.com">yonghahn@grabngosolution.com</a></li>
+        <li><a href="tel:+17702701188">(770) 270-1188</a></li>
+        <li>Atlanta, GA</li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap foot-bottom">
+    <span>© 2026 GrabNGo Solution. All rights reserved.</span>
+    <span>grabngosolution.com</span>
+  </div>
+</footer>
+
+</body>
+</html>
