@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GrabNgo Admin — Restaurant Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#05204D; --navy-soft:#3C4F6E; --green:#35B75F; --green-deep:#279149;
+    --orange:#F87C27; --red:#B8452F; --bg:#FCFBF8; --panel:#F3F1EA; --paper:#FFFFFF; --rule:#E4E1D6;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--navy);font-family:'Inter',sans-serif;line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+  h1,h2,h3{font-family:'Poppins',sans-serif;color:var(--navy);}
+
+  /* ---- Gate ---- */
+  #gate{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:100;}
+  .gate-card{background:var(--paper);border-radius:16px;padding:36px 32px;width:100%;max-width:340px;text-align:center;}
+  .gate-card h1{font-size:20px;margin-bottom:6px;}
+  .gate-card p{font-size:13px;color:var(--navy-soft);margin-bottom:20px;}
+  .gate-card input{width:100%;padding:12px 14px;border-radius:9px;border:1.5px solid var(--rule);font-size:15px;margin-bottom:12px;}
+  .gate-card button{width:100%;padding:12px;border-radius:9px;border:none;background:var(--green);color:#fff;font-family:'Poppins',sans-serif;font-weight:600;font-size:14.5px;cursor:pointer;}
+  #gate-error{color:var(--red);font-size:12.5px;margin-top:10px;display:none;}
+
+  /* ---- Dashboard ---- */
+  #dash{display:none;}
+  header{background:var(--navy);color:#fff;padding:18px 0;}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  header h1{color:#fff;font-size:18px;}
+  header .sub{font-size:12px;color:#9fb0cc;}
+  .refresh-note{font-size:11.5px;color:#9fb0cc;}
+
+  section{padding:28px 0;}
+  .section-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;}
+  .dot.off{background:var(--rule);}
+  .dot.err{background:var(--red);}
+
+  /* Restaurant live cards */
+  .rest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:860px){.rest-grid{grid-template-columns:1fr;}}
+  .rest-card{background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:20px;}
+  .rest-card .rname{font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;}
+  .rest-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .stat{background:var(--panel);border-radius:10px;padding:10px 12px;}
+  .stat .n{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;color:var(--navy);}
+  .stat .l{font-size:11px;color:var(--navy-soft);margin-top:2px;}
+
+  /* Period tabs + report table */
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab{padding:9px 18px;border-radius:20px;border:1.5px solid var(--rule);background:var(--paper);font-size:13.5px;font-weight:600;color:var(--navy-soft);cursor:pointer;}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  table{width:100%;border-collapse:collapse;background:var(--paper);border-radius:14px;overflow:hidden;border:1px solid var(--rule);}
+  th,td{padding:12px 16px;text-align:left;font-size:13.5px;}
+  th{background:var(--panel);font-weight:700;color:var(--navy-soft);font-size:11.5px;text-transform:uppercase;letter-spacing:0.04em;}
+  tr:not(:last-child) td{border-bottom:1px solid var(--rule);}
+  tr.total-row td{font-weight:700;background:var(--panel);}
+  .loading-row td{color:var(--navy-soft);font-style:italic;}
+
+  /* Live feed */
+  .feed{background:var(--paper);border:1px solid var(--rule);border-radius:14px;max-height:520px;overflow-y:auto;}
+  .feed-item{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rule);align-items:flex-start;}
+  .feed-item:last-child{border-bottom:none;}
+  .feed-badge{font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+  .feed-badge.order{background:#E6F4EA;color:var(--green-deep);}
+  .feed-badge.res{background:#FFE9D6;color:#B85A1E;}
+  .feed-main{flex:1;min-width:0;}
+  .feed-title{font-size:13.5px;font-weight:600;}
+  .feed-sub{font-size:12px;color:var(--navy-soft);margin-top:2px;}
+  .feed-time{font-size:11px;color:var(--navy-soft);white-space:nowrap;flex-shrink:0;}
+  .empty-note{padding:24px;text-align:center;color:var(--navy-soft);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <h1>GrabNgo Admin</h1>
+    <p>Enter the dashboard password to continue.</p>
+    <input type="password" id="gate-password" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()"/>
+    <button onclick="checkPassword()">Enter</button>
+    <div id="gate-error">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<div id="dash">
+  <header>
+    <div class="wrap">
+      <div>
+        <h1>GrabNgo Admin Dashboard</h1>
+        <div class="sub">Live monitoring — Hsu's Gourmet · Lucky Key & Fuji Ya · Pacific Rim Bistro</div>
+      </div>
+      <div class="refresh-note" id="last-updated">Connecting…</div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <div class="section-title">Today — Live</div>
+      <div class="rest-grid" id="rest-cards"></div>
+    </div>
+  </section>
+
+  <section style="padding-top:0;">
+    <div class="wrap">
+      <div class="section-title">Reporting</div>
+      <div class="tabs">
+        <div class="tab active" data-period="daily" onclick="switchPeriod('daily')">Daily</div>
+        <div class="tab" data-period="weekly" onclick="switchPeriod('weekly')">Weekly</div>
+        <div class="tab" data-period="monthly" onclick="switchPeriod('monthly')">Monthly</div>
+        <div class="tab" data-period="yearly" onclick="switchPeriod('yearly')">Yearly</div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Restaurant</th><th>Orders</th><th>Revenue</th><th>Avg Order</th><th>Reservations</th></tr>
+        </thead>
+        <tbody id="report-body">
+          <tr class="loading-row"><td colspan="5">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="padding-top:0;">
+    <div class="wrap">
+      <div class="section-title">Live Feed — Recent Orders &amp; Reservations</div>
+      <div class="feed" id="live-feed">
+        <div class="empty-note">Waiting for data…</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, query, where, orderBy, limit, onSnapshot, getDocs }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, signInAnonymously, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+// ── Restaurant registry ──────────────────────────────────────────────
+const RESTAURANTS = [
+  {
+    key: 'hsus', name: "Hsu's Gourmet",
+    config: {
+      apiKey: 'AIzaSyCSShOUi51ibX79L_H9SQhzuORZ89Ymr6c',
+      authDomain: 'hsus-gourmet.firebaseapp.com',
+      projectId: 'hsus-gourmet',
+      storageBucket: 'hsus-gourmet.firebasestorage.app',
+      messagingSenderId: '853300097312',
+      appId: '1:853300097312:web:8d17b304a53ad4fe366745',
+    },
+  },
+  {
+    key: 'luckykey', name: 'Lucky Key & Fuji Ya',
+    config: {
+      apiKey: 'AIzaSyByZhx5NWLc5u9kJ5x_ZbH6ERGKyFGw7ZE',
+      authDomain: 'luckykeyfujiya-3fd7c.firebaseapp.com',
+      projectId: 'luckykeyfujiya-3fd7c',
+      storageBucket: 'luckykeyfujiya-3fd7c.firebasestorage.app',
+      messagingSenderId: '353047402612',
+      appId: '1:353047402612:web:5ce66e66ed89b82caed921',
+    },
+  },
+  {
+    key: 'pacificrim', name: 'Pacific Rim Bistro',
+    config: {
+      apiKey: 'AIzaSyChIQ0Z1sM68J6OtgIW82EyWuzys9Oz6tg',
+      authDomain: 'pacific-rim-bistro.firebaseapp.com',
+      projectId: 'pacific-rim-bistro',
+      storageBucket: 'pacific-rim-bistro.firebasestorage.app',
+      messagingSenderId: '855085279043',
+      appId: '1:855085279043:web:7e0b1db10cedf7e50b71f6',
+    },
+  },
+];
+
+const state = {}; // key -> { db, todayOrders:[], todayRes:[], connected:bool }
+let combinedFeed = []; // merged recent items across all 3, for the live feed panel
+
+// ── Password gate ──────────────────────────────────────────────────
+window.checkPassword = async function() {
+  const pw = document.getElementById('gate-password').value;
+  const errEl = document.getElementById('gate-error');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch('/api/admin-verify', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: pw }),
+    });
+    const data = await r.json();
+    if (data.ok) {
+      sessionStorage.setItem('grabngo_admin_ok', '1');
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('dash').style.display = 'block';
+      initDashboard();
+    } else {
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error — try again.';
+    errEl.style.display = 'block';
+  }
+};
+
+if (sessionStorage.getItem('grabngo_admin_ok') === '1') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+  initDashboard();
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────
+function startOfToday() { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function startOfWeek() { const d = new Date(); const day = d.getDay(); const diff = (day === 0 ? 6 : day - 1); d.setDate(d.getDate() - diff); d.setHours(0,0,0,0); return d.getTime(); }
+function startOfMonth() { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.getTime(); }
+function startOfYear() { const d = new Date(); d.setMonth(0,1); d.setHours(0,0,0,0); return d.getTime(); }
+function money(n) { return '$' + (n||0).toFixed(2); }
+function timeAgo(ms) {
+  const s = Math.floor((Date.now() - ms) / 1000);
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+// ── Dashboard init ──────────────────────────────────────────────────
+function initDashboard() {
+  renderRestCards(); // initial skeletons
+  RESTAURANTS.forEach(r => setupRestaurant(r));
+  switchPeriod('daily');
+  setInterval(() => { document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString(); }, 1000);
+}
+
+function setupRestaurant(r) {
+  state[r.key] = { name: r.name, todayOrders: [], todayRes: [], connected: false, error: false, errorMsg: '' };
+  try {
+    const app = initializeApp(r.config, r.key);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    state[r.key].db = db;
+
+    signInAnonymously(auth).catch((e) => {
+      console.error('[' + r.name + '] Auth error:', e);
+      state[r.key].error = true; state[r.key].errorMsg = 'Auth: ' + e.message;
+      renderRestCards();
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+      state[r.key].connected = true;
+      renderRestCards();
+
+      // Real-time listener: today's orders
+      const ordersQ = query(collection(db, 'orders'), where('createdAt', '>=', startOfToday()), orderBy('createdAt', 'desc'));
+      onSnapshot(ordersQ, snap => {
+        state[r.key].todayOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        state[r.key].error = false; state[r.key].errorMsg = '';
+        renderRestCards();
+        rebuildFeed();
+      }, (e) => {
+        console.error('[' + r.name + '] Orders listener error:', e);
+        state[r.key].error = true; state[r.key].errorMsg = 'Orders: ' + e.message;
+        renderRestCards();
+      });
+
+      // Real-time listener: today's reservations
+      const resQ = query(collection(db, 'reservations'), where('createdAt', '>=', startOfToday()), orderBy('createdAt', 'desc'));
+      onSnapshot(resQ, snap => {
+        state[r.key].todayRes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderRestCards();
+        rebuildFeed();
+      }, (e) => {
+        console.error('[' + r.name + '] Reservations listener error:', e);
+        state[r.key].error = true; state[r.key].errorMsg = 'Reservations: ' + e.message;
+        renderRestCards();
+      });
+    });
+  } catch(e) {
+    console.error('[' + r.name + '] Setup error:', e);
+    state[r.key].error = true; state[r.key].errorMsg = 'Setup: ' + e.message;
+    renderRestCards();
+  }
+}
+
+// ── Render: today's live restaurant cards ──────────────────────────
+function renderRestCards() {
+  const container = document.getElementById('rest-cards');
+  container.innerHTML = RESTAURANTS.map(r => {
+    const s = state[r.key] || {};
+    const orders = s.todayOrders || [];
+    const res = s.todayRes || [];
+    const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const dotClass = s.error ? 'err' : (s.connected ? '' : 'off');
+    const errBanner = s.error && s.errorMsg
+      ? `<div style="margin-top:10px;padding:8px 10px;background:#FBEAE7;border-radius:8px;font-size:11px;color:var(--red);">${s.errorMsg}</div>`
+      : '';
+    return `
+      <div class="rest-card">
+        <div class="rname"><span class="dot ${dotClass}"></span>${r.name}</div>
+        <div class="rest-stats">
+          <div class="stat"><div class="n">${orders.length}</div><div class="l">Orders today</div></div>
+          <div class="stat"><div class="n">${money(revenue)}</div><div class="l">Revenue today</div></div>
+          <div class="stat"><div class="n">${res.length}</div><div class="l">Reservations today</div></div>
+          <div class="stat"><div class="n">${money(orders.length ? revenue/orders.length : 0)}</div><div class="l">Avg order</div></div>
+        </div>
+        ${errBanner}
+      </div>`;
+  }).join('');
+}
+
+// ── Render: live feed (merged, most recent first) ───────────────────
+function rebuildFeed() {
+  const items = [];
+  RESTAURANTS.forEach(r => {
+    const s = state[r.key];
+    if (!s) return;
+    (s.todayOrders||[]).forEach(o => items.push({
+      type: 'order', restaurant: r.name, createdAt: o.createdAt,
+      title: `New order — ${money(o.total)}`,
+      sub: (o.customer && o.customer.name ? o.customer.name : 'Guest') + ' · ' + (o.pickupType || 'pickup'),
+    }));
+    (s.todayRes||[]).forEach(res => items.push({
+      type: 'res', restaurant: r.name, createdAt: res.createdAt,
+      title: `Reservation — ${res.guests || '?'} guests`,
+      sub: (res.name || 'Guest') + ' · ' + (res.date || '') + ' ' + (res.time || ''),
+    }));
+  });
+  items.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  combinedFeed = items.slice(0, 60);
+  renderFeed();
+}
+
+function renderFeed() {
+  const container = document.getElementById('live-feed');
+  if (!combinedFeed.length) {
+    container.innerHTML = '<div class="empty-note">No orders or reservations yet today.</div>';
+    return;
+  }
+  container.innerHTML = combinedFeed.map(item => `
+    <div class="feed-item">
+      <div class="feed-badge ${item.type}">${item.type === 'order' ? 'ORDER' : 'RESERVATION'}</div>
+      <div class="feed-main">
+        <div class="feed-title">${item.title}</div>
+        <div class="feed-sub">${item.restaurant} · ${item.sub}</div>
+      </div>
+      <div class="feed-time">${timeAgo(item.createdAt || Date.now())}</div>
+    </div>
+  `).join('');
+}
+
+// ── Reporting: Daily / Weekly / Monthly / Yearly ─────────────────────
+window.switchPeriod = async function(period) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.period === period));
+  const tbody = document.getElementById('report-body');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Loading…</td></tr>';
+
+  let startMs;
+  if (period === 'daily') startMs = startOfToday();
+  else if (period === 'weekly') startMs = startOfWeek();
+  else if (period === 'monthly') startMs = startOfMonth();
+  else startMs = startOfYear();
+
+  const rows = await Promise.all(RESTAURANTS.map(async r => {
+    const s = state[r.key];
+    if (!s || !s.db) return { name: r.name, orders: 0, revenue: 0, res: 0, error: true };
+    try {
+      const ordersQ = query(collection(s.db, 'orders'), where('createdAt', '>=', startMs));
+      const resQ = query(collection(s.db, 'reservations'), where('createdAt', '>=', startMs));
+      const [ordersSnap, resSnap] = await Promise.all([getDocs(ordersQ), getDocs(resQ)]);
+      const orders = ordersSnap.docs.map(d => d.data());
+      const revenue = orders.reduce((sum,o) => sum + (o.total||0), 0);
+      return { name: r.name, orders: orders.length, revenue, res: resSnap.size };
+    } catch(e) {
+      return { name: r.name, orders: 0, revenue: 0,
